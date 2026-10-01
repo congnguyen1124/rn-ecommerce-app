@@ -135,7 +135,10 @@ export function HomeScreen({ navigation }: Props) {
             <Pressable
               key={category.name}
               onPress={() =>
-                navigation.navigate('Landing', { title: category.name, category: category.name })
+                navigation.navigate('Landing', {
+                  title: t(category.labelKey),
+                  category: category.name,
+                })
               }
               style={styles.category}
             >
