@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
+import { localizeCatalogText } from '../../../shared/i18n/localizeCatalog';
 import { formatCurrency } from '../../../shared/utils/currency';
 import { colors, radius, shadow, spacing } from '../../../shared/theme/tokens';
 import type { Product } from '../domain/types';
@@ -15,6 +17,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onPress, onAdd, compact = false }: ProductCardProps) {
+  const { t } = useTranslation();
   const variant = product.variants.find(({ stock }) => stock > 0) ?? product.variants[0];
   if (!variant) return null;
   return (
@@ -32,12 +35,12 @@ export function ProductCard({ product, onPress, onAdd, compact = false }: Produc
       </View>
       <View style={styles.content}>
         <Text numberOfLines={2} style={styles.name}>
-          {product.name}
+          {localizeCatalogText(product.name, t)}
         </Text>
         <View style={styles.ratingRow}>
           <Ionicons name="star" size={13} color={colors.warning} />
           <Text style={styles.meta}>
-            {product.rating} · Đã bán {product.sold}
+            {product.rating} · {t('catalog.sold', { count: product.sold })}
           </Text>
         </View>
         <View style={styles.priceRow}>
@@ -46,7 +49,7 @@ export function ProductCard({ product, onPress, onAdd, compact = false }: Produc
           </Text>
           {onAdd ? (
             <Pressable
-              accessibilityLabel="Thêm vào giỏ"
+              accessibilityLabel={t('catalog.addToCart')}
               hitSlop={8}
               onPress={(event) => {
                 event.stopPropagation();

@@ -2,6 +2,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import type { RootStackParamList } from '../../../app/navigation/types';
 import { ConfirmModal } from '../../../shared/components/ConfirmModal';
@@ -9,13 +10,14 @@ import { EmptyState } from '../../../shared/components/EmptyState';
 import { ScreenHeader } from '../../../shared/components/ScreenHeader';
 import { colors, spacing } from '../../../shared/theme/tokens';
 import { OrderCard } from '../components/OrderCard';
-import { orderStatusLabel, type OrderRecord, type OrderStatusTab } from '../domain/types';
+import { orderStatusTranslationKey, type OrderRecord, type OrderStatusTab } from '../domain/types';
 import { useOrderStore } from '../store/orderStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Orders'>;
-const tabs = Object.keys(orderStatusLabel) as OrderStatusTab[];
+const tabs = Object.keys(orderStatusTranslationKey) as OrderStatusTab[];
 
 export function OrdersScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const orders = useOrderStore(({ orders: value }) => value);
   const confirmReceived = useOrderStore(({ confirmReceived }) => confirmReceived);
   const [tab, setTab] = useState<OrderStatusTab>(route.params?.initialTab ?? 'waiting_payment');
@@ -25,23 +27,23 @@ export function OrdersScreen({ navigation, route }: Props) {
   const actionFor = (order: OrderRecord) => {
     if (order.status === 'waiting_payment')
       return {
-        label: 'Thanh toán',
+        label: t('orders.pay'),
         action: () => navigation.navigate('PaymentResult', { success: true, orderId: order.id }),
       };
     if (order.status === 'delivering')
-      return { label: 'Đã nhận hàng', action: () => setConfirming(order) };
+      return { label: t('orders.received'), action: () => setConfirming(order) };
     if (order.status === 'cancelled')
       return {
-        label: 'Chi tiết hủy',
+        label: t('orders.cancellationDetail'),
         action: () => navigation.navigate('OrderDetail', { orderId: order.id }),
       };
-    if (order.status === 'done') return { label: 'Liên hệ', action: () => undefined };
+    if (order.status === 'done') return { label: t('orders.contact'), action: () => undefined };
     return undefined;
   };
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
-      <ScreenHeader title="Đơn hàng của tôi" />
+      <ScreenHeader title={t('orders.title')} />
       <View style={styles.tabWrap}>
         <ScrollView
           horizontal
@@ -55,7 +57,7 @@ export function OrdersScreen({ navigation, route }: Props) {
               style={[styles.tab, tab === item && styles.tabActive]}
             >
               <Text style={[styles.tabText, tab === item && styles.tabTextActive]}>
-                {orderStatusLabel[item]}
+                {t(orderStatusTranslationKey[item])}
               </Text>
             </Pressable>
           ))}
@@ -64,9 +66,9 @@ export function OrdersScreen({ navigation, route }: Props) {
       {filtered.length === 0 ? (
         <EmptyState
           icon="package-variant"
-          title="Chưa có đơn hàng"
-          message={`Bạn chưa có đơn ở trạng thái “${orderStatusLabel[tab]}”.`}
-          actionLabel="Khám phá sản phẩm"
+          title={t('orders.emptyTitle')}
+          message={t('orders.emptyMessage', { status: t(orderStatusTranslationKey[tab]) })}
+          actionLabel={t('orders.exploreProducts')}
           onAction={() => navigation.navigate('Home')}
         />
       ) : (
@@ -87,9 +89,9 @@ export function OrdersScreen({ navigation, route }: Props) {
       )}
       <ConfirmModal
         visible={Boolean(confirming)}
-        title="Xác nhận đã nhận hàng"
-        message="Bạn xác nhận đã nhận đủ sản phẩm và sản phẩm không có vấn đề?"
-        confirmLabel="Xác nhận"
+        title={t('orders.confirmReceivedTitle')}
+        message={t('orders.confirmReceivedMessage')}
+        confirmLabel={t('common.confirm')}
         onCancel={() => setConfirming(undefined)}
         onConfirm={() => {
           if (confirming) confirmReceived(confirming.id);

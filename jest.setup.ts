@@ -8,3 +8,7 @@ jest.mock('expo-haptics', () => ({
   notificationAsync: jest.fn(),
   selectionAsync: jest.fn(),
 }));
+
+jest.mock('expo-localization', () => ({
+  getLocales: () => [{ languageCode: 'vi', languageTag: 'vi-VN' }],
+}));

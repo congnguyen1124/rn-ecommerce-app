@@ -4,11 +4,13 @@ import { Image } from 'expo-image';
 import { useState } from 'react';
 import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import type { RootStackParamList } from '../../../app/navigation/types';
 import { AppButton } from '../../../shared/components/AppButton';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { LoadingView } from '../../../shared/components/LoadingView';
+import { localizeCatalogText } from '../../../shared/i18n/localizeCatalog';
 import { colors, radius, shadow, spacing } from '../../../shared/theme/tokens';
 import { formatCurrency } from '../../../shared/utils/currency';
 import { summarizeCart } from '../../cart/domain/cartRules';
@@ -24,6 +26,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ProductDetail'>;
 type Action = 'cart' | 'buy';
 
 export function ProductDetailScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const query = useProduct(route.params.productId);
   const homeQuery = useHomeCatalog();
   const groups = useCartStore(({ groups: value }) => value);
@@ -31,13 +34,13 @@ export function ProductDetailScreen({ navigation, route }: Props) {
   const [action, setAction] = useState<Action>();
   const [notice, setNotice] = useState('');
 
-  if (query.isLoading) return <LoadingView label="Đang tải sản phẩm..." />;
+  if (query.isLoading) return <LoadingView label={t('catalog.loadingProduct')} />;
   if (!query.data || query.isError) {
     return (
       <EmptyState
-        title="Không tìm thấy sản phẩm"
-        message="Sản phẩm có thể đã ngừng kinh doanh."
-        actionLabel="Quay lại"
+        title={t('catalog.notFound')}
+        message={t('catalog.unavailableMessage')}
+        actionLabel={t('common.back')}
         onAction={navigation.goBack}
       />
     );
@@ -55,7 +58,7 @@ export function ProductDetailScreen({ navigation, route }: Props) {
     if (!seller) return;
     if (action === 'cart') {
       addToCart(product, variant, seller, quantity, personalAdvice);
-      setNotice('Đã thêm vào giỏ.');
+      setNotice(t('home.addedToCart'));
       setTimeout(() => setNotice(''), 1800);
     } else {
       navigation.navigate('Checkout', {
@@ -79,7 +82,7 @@ export function ProductDetailScreen({ navigation, route }: Props) {
           />
           {!hasStock ? (
             <View style={styles.soldOutOverlay}>
-              <Text style={styles.soldOutText}>Hết hàng</Text>
+              <Text style={styles.soldOutText}>{t('catalog.soldOut')}</Text>
             </View>
           ) : null}
         </Pressable>
@@ -96,15 +99,17 @@ export function ProductDetailScreen({ navigation, route }: Props) {
             </View>
             <RoundIcon
               icon="share-social-outline"
-              onPress={() => Share.share({ message: `${product.name} · ON+ Shopping` })}
+              onPress={() =>
+                Share.share({ message: `${localizeCatalogText(product.name, t)} · ON+ Shopping` })
+              }
             />
             <RoundIcon icon="ellipsis-vertical" onPress={() => undefined} />
           </View>
         </View>
 
         <View style={styles.section}>
-          {product.isPreorder ? <Text style={styles.preorder}>ĐẶT TRƯỚC</Text> : null}
-          <Text style={styles.productName}>{product.name}</Text>
+          {product.isPreorder ? <Text style={styles.preorder}>{t('catalog.preorder')}</Text> : null}
+          <Text style={styles.productName}>{localizeCatalogText(product.name, t)}</Text>
           {firstVariant ? (
             <View style={styles.priceLine}>
               <Text style={styles.price}>{formatCurrency(variantPrice(firstVariant))}</Text>
@@ -119,26 +124,25 @@ export function ProductDetailScreen({ navigation, route }: Props) {
           <View style={styles.ratingLine}>
             <Ionicons name="star" size={16} color={colors.warning} />
             <Text style={styles.ratingStrong}>{product.rating}</Text>
-            <Text style={styles.ratingText}>({Math.round(product.sold / 5)} đánh giá)</Text>
+            <Text style={styles.ratingText}>
+              {t('catalog.reviews', { count: Math.round(product.sold / 5) })}
+            </Text>
             <View style={styles.dot} />
-            <Text style={styles.ratingText}>Đã bán {product.sold}</Text>
+            <Text style={styles.ratingText}>{t('catalog.sold', { count: product.sold })}</Text>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Thông tin sản phẩm</Text>
-          <InfoRow label="Thương hiệu" value={product.brand} />
-          <InfoRow label="Xuất xứ" value={product.origin} />
-          <InfoRow label="Bảo hành" value={product.warranty} />
+          <Text style={styles.sectionTitle}>{t('catalog.productInfo')}</Text>
+          <InfoRow label={t('catalog.brand')} value={product.brand} />
+          <InfoRow label={t('catalog.origin')} value={localizeCatalogText(product.origin, t)} />
+          <InfoRow label={t('catalog.warranty')} value={localizeCatalogText(product.warranty, t)} />
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mô tả sản phẩm</Text>
-          <Text style={styles.description}>{product.description}</Text>
-          <Text style={styles.description}>
-            • Đóng gói cẩn thận và kiểm tra trước khi giao.{`\n`}• Hỗ trợ đổi trả theo chính sách
-            ON+ Shopping.
-          </Text>
+          <Text style={styles.sectionTitle}>{t('catalog.description')}</Text>
+          <Text style={styles.description}>{localizeCatalogText(product.description, t)}</Text>
+          <Text style={styles.description}>{t('catalog.descriptionBullets')}</Text>
         </View>
 
         {seller ? (
@@ -150,12 +154,12 @@ export function ProductDetailScreen({ navigation, route }: Props) {
               <View style={styles.sellerInfo}>
                 <Text style={styles.sellerName}>{seller.name}</Text>
                 <Text style={styles.sellerMeta}>
-                  {seller.rating} ★ · {seller.productCount} sản phẩm
+                  {seller.rating} ★ · {t('catalog.productCount', { count: seller.productCount })}
                 </Text>
               </View>
               <AppButton
                 variant="outline"
-                label="Liên hệ"
+                label={t('common.contact')}
                 onPress={() => undefined}
                 style={styles.contact}
               />
@@ -165,20 +169,20 @@ export function ProductDetailScreen({ navigation, route }: Props) {
 
         <View style={styles.section}>
           <View style={styles.reviewHeader}>
-            <Text style={styles.sectionTitle}>Đánh giá sản phẩm</Text>
-            <Text style={styles.seeAll}>Xem tất cả</Text>
+            <Text style={styles.sectionTitle}>{t('catalog.productReviews')}</Text>
+            <Text style={styles.seeAll}>{t('common.viewAll')}</Text>
           </View>
           <View style={styles.reviewSummary}>
             <Text style={styles.reviewScore}>{product.rating}</Text>
             <View>
               <Text style={styles.stars}>★★★★★</Text>
-              <Text style={styles.ratingText}>Khách hàng rất hài lòng</Text>
+              <Text style={styles.ratingText}>{t('catalog.satisfied')}</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.relatedWrap}>
-          <Text style={styles.sectionTitle}>Sản phẩm tương tự</Text>
+          <Text style={styles.sectionTitle}>{t('catalog.similar')}</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -198,14 +202,14 @@ export function ProductDetailScreen({ navigation, route }: Props) {
       <View style={styles.buyBar}>
         <AppButton
           variant="outline"
-          label="Thêm vào giỏ"
+          label={t('catalog.addToCart')}
           icon={<Ionicons name="cart-outline" size={18} color={colors.primary} />}
           disabled={!hasStock || product.status !== 'normal'}
           onPress={() => setAction('cart')}
           style={styles.buyButton}
         />
         <AppButton
-          label={product.isPreorder ? 'Đặt hàng' : 'Mua ngay'}
+          label={product.isPreorder ? t('catalog.orderNow') : t('catalog.buyNow')}
           disabled={!hasStock || product.status !== 'normal'}
           onPress={() => setAction('buy')}
           style={styles.buyButton}
@@ -222,7 +226,11 @@ export function ProductDetailScreen({ navigation, route }: Props) {
           visible
           product={product}
           actionLabel={
-            action === 'cart' ? 'Thêm vào giỏ' : product.isPreorder ? 'Đặt hàng' : 'Mua ngay'
+            action === 'cart'
+              ? t('catalog.addToCart')
+              : product.isPreorder
+                ? t('catalog.orderNow')
+                : t('catalog.buyNow')
           }
           onClose={() => setAction(undefined)}
           onConfirm={confirmVariant}

@@ -19,4 +19,5 @@ export type RootStackParamList = {
   Orders: { initialTab?: OrderStatusTab } | undefined;
   OrderDetail: { orderId: string };
   PaymentResult: { success: boolean; orderId: string };
+  Settings: undefined;
 };

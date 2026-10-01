@@ -2,6 +2,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import type { RootStackParamList } from '../../../app/navigation/types';
 import { AppButton } from '../../../shared/components/AppButton';
@@ -21,6 +22,7 @@ import { CartProductRow } from '../components/CartProductRow';
 type Props = NativeStackScreenProps<RootStackParamList, 'Cart'>;
 
 export function CartScreen({ navigation }: Props) {
+  const { t } = useTranslation();
   const groups = useCartStore(({ groups: value }) => value);
   const pendingRemovalId = useCartStore(({ pendingRemovalId: value }) => value);
   const actions = useCartStore();
@@ -36,12 +38,12 @@ export function CartScreen({ navigation }: Props) {
   if (groups.length === 0) {
     return (
       <SafeAreaView edges={['top']} style={styles.safe}>
-        <ScreenHeader title="Giỏ hàng" />
+        <ScreenHeader title={t('cart.title')} />
         <EmptyState
           icon="cart-outline"
-          title="Chưa có sản phẩm trong giỏ"
-          message="Khám phá những sản phẩm dành riêng cho bạn."
-          actionLabel="Tiếp tục mua sắm"
+          title={t('cart.emptyTitle')}
+          message={t('cart.emptyMessage')}
+          actionLabel={t('cart.continueShopping')}
           onAction={() => navigation.navigate('Home')}
         />
       </SafeAreaView>
@@ -55,7 +57,7 @@ export function CartScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
-      <ScreenHeader title={`Giỏ hàng (${summary.itemCount})`} />
+      <ScreenHeader title={t('cart.titleWithCount', { count: summary.itemCount })} />
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
         {groups.map((group) => (
           <View key={group.sellerId} style={styles.group}>
@@ -92,7 +94,7 @@ export function CartScreen({ navigation }: Props) {
           <AppCheckbox
             checked={summary.allGroupsSelected}
             onChange={actions.toggleAll}
-            label={`Tổng thanh toán (${summary.selectedCount})`}
+            label={t('cart.totalWithCount', { count: summary.selectedCount })}
           />
           <Text testID="cart-total" style={styles.total}>
             {formatCurrency(summary.total)}
@@ -100,14 +102,14 @@ export function CartScreen({ navigation }: Props) {
         </View>
         <AppButton
           testID="checkout-button"
-          label="Thanh toán"
+          label={t('cart.checkout')}
           disabled={!summary.checkoutEnabled}
           onPress={() => navigation.navigate('Checkout', { cartItemIds: selectedIds })}
         />
       </View>
       <ConfirmModal
         visible={Boolean(pendingRemovalId)}
-        message="Bạn có muốn xóa sản phẩm này khỏi giỏ hàng?"
+        message={t('cart.removeMessage')}
         onCancel={actions.cancelRemove}
         onConfirm={actions.confirmRemove}
       />
@@ -116,7 +118,7 @@ export function CartScreen({ navigation }: Props) {
           visible
           product={editingProduct}
           initialVariantId={editingItem?.variantId}
-          actionLabel="Xác nhận"
+          actionLabel={t('common.confirm')}
           onClose={() => setEditingItemId(undefined)}
           onConfirm={updateVariant}
         />

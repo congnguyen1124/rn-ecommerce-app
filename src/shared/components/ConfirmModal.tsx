@@ -1,4 +1,5 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { colors, radius, spacing } from '../theme/tokens';
 import { AppButton } from './AppButton';
@@ -15,28 +16,33 @@ interface ConfirmModalProps {
 
 export function ConfirmModal({
   visible,
-  title = 'Xác nhận',
+  title,
   message,
-  confirmLabel = 'Có',
-  cancelLabel = 'Hủy',
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
+  const { t } = useTranslation();
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onCancel}>
       <Pressable style={styles.scrim} onPress={onCancel}>
         <Pressable style={styles.sheet} onPress={(event) => event.stopPropagation()}>
           <View style={styles.indicator} />
-          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.title}>{title ?? t('common.confirm')}</Text>
           <Text style={styles.message}>{message}</Text>
           <View style={styles.actions}>
             <AppButton
               variant="outline"
-              label={cancelLabel}
+              label={cancelLabel ?? t('common.cancel')}
               onPress={onCancel}
               style={styles.button}
             />
-            <AppButton label={confirmLabel} onPress={onConfirm} style={styles.button} />
+            <AppButton
+              label={confirmLabel ?? t('common.yes')}
+              onPress={onConfirm}
+              style={styles.button}
+            />
           </View>
         </Pressable>
       </Pressable>

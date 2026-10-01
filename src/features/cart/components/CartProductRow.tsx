@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { AppCheckbox } from '../../../shared/components/AppCheckbox';
 import { QuantityStepper } from '../../../shared/components/QuantityStepper';
+import { localizeCatalogText, localizeVariantLabel } from '../../../shared/i18n/localizeCatalog';
 import { colors, radius, spacing } from '../../../shared/theme/tokens';
 import { formatCurrency } from '../../../shared/utils/currency';
 import { isOverflow, isSelectable, isSoldOut } from '../domain/cartRules';
@@ -29,6 +31,7 @@ export function CartProductRow({
   onRemove,
   onChangeVariant,
 }: CartProductRowProps) {
+  const { t } = useTranslation();
   const soldOut = isSoldOut(item);
   const overflow = isOverflow(item);
   const unavailable = !item.variantAvailable;
@@ -44,21 +47,21 @@ export function CartProductRow({
         <Image source={cartImage(item.imageKey)} style={styles.image} contentFit="cover" />
         {soldOut ? (
           <View style={styles.soldOverlay}>
-            <Text style={styles.soldText}>Hết hàng</Text>
+            <Text style={styles.soldText}>{t('catalog.soldOut')}</Text>
           </View>
         ) : null}
       </Pressable>
       <View style={styles.content}>
         <Pressable onPress={onPress}>
           <Text numberOfLines={1} style={[styles.name, soldOut && styles.muted]}>
-            {item.productName}
+            {localizeCatalogText(item.productName, t)}
           </Text>
         </Pressable>
-        {item.isPreorder ? <Text style={styles.preorder}>Đặt trước</Text> : null}
+        {item.isPreorder ? <Text style={styles.preorder}>{t('catalog.preorder')}</Text> : null}
         {!unavailable ? (
           <Pressable disabled={soldOut} onPress={onChangeVariant} style={styles.variant}>
             <Text numberOfLines={1} style={styles.variantText}>
-              Phân loại: {item.variantLabel}
+              {t('catalog.classification', { value: localizeVariantLabel(item.variantLabel, t) })}
             </Text>
             <Ionicons
               name="chevron-down"
@@ -67,7 +70,7 @@ export function CartProductRow({
             />
           </Pressable>
         ) : (
-          <Text style={styles.unavailable}>Phân loại không còn bán</Text>
+          <Text style={styles.unavailable}>{t('catalog.variantUnavailable')}</Text>
         )}
         <View style={styles.priceRow}>
           {item.unitPrice !== item.originalPrice ? (
@@ -79,7 +82,7 @@ export function CartProductRow({
         </View>
         {unavailable || soldOut ? (
           <Pressable onPress={onChangeVariant} style={styles.reselect}>
-            <Text style={styles.reselectText}>Chọn phân loại khác</Text>
+            <Text style={styles.reselectText}>{t('catalog.chooseAnotherVariant')}</Text>
           </Pressable>
         ) : (
           <View style={styles.actionRow}>
@@ -89,14 +92,18 @@ export function CartProductRow({
               onIncrease={onIncrease}
               increaseDisabled={item.quantity >= item.stock}
             />
-            <Pressable accessibilityLabel="Xóa sản phẩm" onPress={onRemove} style={styles.trash}>
+            <Pressable
+              accessibilityLabel={t('catalog.removeProduct')}
+              onPress={onRemove}
+              style={styles.trash}
+            >
               <Ionicons name="trash-outline" size={20} color={colors.textSecondary} />
             </Pressable>
           </View>
         )}
         {overflow && item.stock > 0 ? (
           <Text testID={`overflow-${item.id}`} style={styles.overflow}>
-            Còn {item.stock} sản phẩm
+            {t('catalog.remaining', { count: item.stock })}
           </Text>
         ) : null}
       </View>

@@ -13,6 +13,7 @@ import { PaymentMethodsScreen } from '../../features/checkout/screens/PaymentMet
 import { OrderDetailScreen } from '../../features/orders/screens/OrderDetailScreen';
 import { OrdersScreen } from '../../features/orders/screens/OrdersScreen';
 import { PaymentResultScreen } from '../../features/orders/screens/PaymentResultScreen';
+import { SettingsScreen } from '../../features/settings/screens/SettingsScreen';
 import { colors } from '../../shared/theme/tokens';
 import type { RootStackParamList } from './types';
 
@@ -44,6 +45,7 @@ export function RootNavigator() {
       <Stack.Screen name="AreaPicker" component={AreaPickerScreen} />
       <Stack.Screen name="Orders" component={OrdersScreen} />
       <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
+      <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen
         name="PaymentResult"
         component={PaymentResultScreen}

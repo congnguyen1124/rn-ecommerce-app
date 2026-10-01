@@ -2,10 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { AppButton } from '../../../shared/components/AppButton';
 import { AppCheckbox } from '../../../shared/components/AppCheckbox';
 import { QuantityStepper } from '../../../shared/components/QuantityStepper';
+import { localizeCatalogText } from '../../../shared/i18n/localizeCatalog';
 import { colors, radius, spacing } from '../../../shared/theme/tokens';
 import { formatCurrency } from '../../../shared/utils/currency';
 import type { Product, ProductVariant } from '../domain/types';
@@ -28,6 +30,7 @@ export function VariantSelectorSheet({
   onClose,
   onConfirm,
 }: VariantSelectorSheetProps) {
+  const { t } = useTranslation();
   const initial = useMemo(
     () => product.variants.find(({ id }) => id === initialVariantId) ?? product.variants[0],
     [initialVariantId, product.variants],
@@ -55,17 +58,18 @@ export function VariantSelectorSheet({
                 <Text style={styles.original}>{formatCurrency(variant.originalPrice)}</Text>
               ) : null}
               <Text style={[styles.stock, !selectable && styles.stockError]}>
-                {selectable ? `Kho: ${variant.stock} sản phẩm` : 'Hết hàng'}
+                {selectable ? t('catalog.stock', { count: variant.stock }) : t('catalog.soldOut')}
               </Text>
             </View>
           </View>
           <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-            <Text style={styles.sectionTitle}>Phân loại</Text>
+            <Text style={styles.sectionTitle}>{t('catalog.variant')}</Text>
             <View style={styles.chips}>
               {product.variants.map((item) => {
                 const selected = item.id === variant.id;
                 const label = [item.primaryOption?.label, item.secondaryOption?.label]
                   .filter(Boolean)
+                  .map((value) => localizeCatalogText(value!, t))
                   .join(' · ');
                 return (
                   <Pressable
@@ -81,14 +85,14 @@ export function VariantSelectorSheet({
                     ]}
                   >
                     <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                      {label || 'Mặc định'}
+                      {label || t('catalog.defaultVariant')}
                     </Text>
                   </Pressable>
                 );
               })}
             </View>
             <View style={styles.quantityRow}>
-              <Text style={styles.sectionTitle}>Số lượng</Text>
+              <Text style={styles.sectionTitle}>{t('catalog.quantity')}</Text>
               <QuantityStepper
                 value={quantity}
                 onDecrease={() => setQuantity((value) => Math.max(1, value - 1))}
@@ -102,11 +106,9 @@ export function VariantSelectorSheet({
                 <AppCheckbox
                   checked={personalAdvice}
                   onChange={setPersonalAdvice}
-                  label="Nhận tư vấn cá nhân"
+                  label={t('catalog.personalAdvice')}
                 />
-                <Text style={styles.adviceText}>
-                  Nhân viên sẽ liên hệ trong vòng 24 giờ để xác nhận đơn đặt trước.
-                </Text>
+                <Text style={styles.adviceText}>{t('catalog.adviceDescription')}</Text>
               </View>
             ) : null}
           </ScrollView>

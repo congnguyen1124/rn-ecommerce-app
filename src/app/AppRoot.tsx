@@ -6,6 +6,8 @@ import { useEffect } from 'react';
 import { AppState, Platform, type AppStateStatus } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { useLanguageStore } from '../features/settings/store/languageStore';
+import i18n from '../shared/i18n/i18n';
 import { colors } from '../shared/theme/tokens';
 import { RootNavigator } from './navigation/RootNavigator';
 import { queryClient } from './query/queryClient';
@@ -21,6 +23,12 @@ const navigationTheme = {
 };
 
 export function AppRoot() {
+  const locale = useLanguageStore(({ locale: value }) => value);
+
+  useEffect(() => {
+    void i18n.changeLanguage(locale);
+  }, [locale]);
+
   useEffect(() => {
     onlineManager.setEventListener((setOnline) =>
       NetInfo.addEventListener((state) => setOnline(Boolean(state.isConnected))),

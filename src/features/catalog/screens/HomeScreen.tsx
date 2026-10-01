@@ -5,12 +5,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import type { RootStackParamList } from '../../../app/navigation/types';
 import { LoadingView } from '../../../shared/components/LoadingView';
 import { colors, radius, shadow, spacing } from '../../../shared/theme/tokens';
 import { summarizeCart } from '../../cart/domain/cartRules';
 import { useCartStore } from '../../cart/store/cartStore';
+import { useLanguageStore } from '../../settings/store/languageStore';
 import { catalogImages, getSeller } from '../data/dummyCatalog';
 import { useHomeCatalog } from '../hooks/useCatalog';
 import { ProductCard } from '../components/ProductCard';
@@ -18,20 +20,27 @@ import { ProductCard } from '../components/ProductCard';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 const categories = [
-  { name: 'Công nghệ', icon: 'headphones' as const, color: '#EDE6FF' },
-  { name: 'Làm đẹp', icon: 'flower-outline' as const, color: '#FFE9E8' },
-  { name: 'Thời trang', icon: 'shopping-outline' as const, color: '#FFF3DE' },
-  { name: 'Đời sống', icon: 'home-heart' as const, color: '#E6F7F0' },
+  { name: 'Công nghệ', labelKey: 'home.technology', icon: 'headphones' as const, color: '#EDE6FF' },
+  { name: 'Làm đẹp', labelKey: 'home.beauty', icon: 'flower-outline' as const, color: '#FFE9E8' },
+  {
+    name: 'Thời trang',
+    labelKey: 'home.fashion',
+    icon: 'shopping-outline' as const,
+    color: '#FFF3DE',
+  },
+  { name: 'Đời sống', labelKey: 'home.lifestyle', icon: 'home-heart' as const, color: '#E6F7F0' },
 ];
 
 export function HomeScreen({ navigation }: Props) {
+  const { t } = useTranslation();
+  const locale = useLanguageStore(({ locale: value }) => value);
   const query = useHomeCatalog();
   const groups = useCartStore(({ groups: value }) => value);
   const addToCart = useCartStore(({ addToCart: action }) => action);
   const [notice, setNotice] = useState('');
   const summary = summarizeCart(groups);
 
-  if (query.isLoading || !query.data) return <LoadingView label="Đang chuẩn bị cửa hàng..." />;
+  if (query.isLoading || !query.data) return <LoadingView label={t('home.preparing')} />;
 
   const quickAdd = (productId: string) => {
     const product = query.data.products.find(({ id }) => id === productId);
@@ -39,7 +48,7 @@ export function HomeScreen({ navigation }: Props) {
     const seller = product ? getSeller(product.sellerId) : undefined;
     if (!product || !variant || !seller) return;
     addToCart(product, variant, seller, 1);
-    setNotice('Đã thêm vào giỏ.');
+    setNotice(t('home.addedToCart'));
     setTimeout(() => setNotice(''), 1800);
   };
 
@@ -54,14 +63,14 @@ export function HomeScreen({ navigation }: Props) {
         </View>
         <View style={styles.topActions}>
           <Pressable
-            accessibilityLabel="Đơn hàng"
+            accessibilityLabel={t('home.orders')}
             onPress={() => navigation.navigate('Orders')}
             style={styles.iconButton}
           >
             <MaterialCommunityIcons name="package-variant-closed" size={22} color={colors.ink} />
           </Pressable>
           <Pressable
-            accessibilityLabel="Giỏ hàng"
+            accessibilityLabel={t('home.cart')}
             onPress={() => navigation.navigate('Cart')}
             style={styles.iconButton}
           >
@@ -72,9 +81,13 @@ export function HomeScreen({ navigation }: Props) {
               </View>
             ) : null}
           </Pressable>
-          <View style={styles.profile}>
-            <Text style={styles.profileText}>CN</Text>
-          </View>
+          <Pressable
+            accessibilityLabel={t('home.settings')}
+            onPress={() => navigation.navigate('Settings')}
+            style={styles.profile}
+          >
+            <Text style={styles.profileText}>{locale.toUpperCase()}</Text>
+          </Pressable>
         </View>
       </View>
       <ScrollView
@@ -89,7 +102,7 @@ export function HomeScreen({ navigation }: Props) {
         contentContainerStyle={styles.scroll}
       >
         <Pressable
-          onPress={() => navigation.navigate('Landing', { title: 'Bộ sưu tập sắc màu' })}
+          onPress={() => navigation.navigate('Landing', { title: t('home.collection') })}
           style={styles.hero}
         >
           <Image source={catalogImages.hero} style={StyleSheet.absoluteFill} contentFit="cover" />
@@ -98,20 +111,20 @@ export function HomeScreen({ navigation }: Props) {
             style={StyleSheet.absoluteFill}
           />
           <View style={styles.heroContent}>
-            <Text style={styles.heroEyebrow}>BỘ SƯU TẬP MỚI</Text>
-            <Text style={styles.heroTitle}>Chạm sắc tím,{`\n`}bật chất riêng</Text>
-            <Text style={styles.heroSub}>Ưu đãi đến 25% · Giao nhanh toàn quốc</Text>
+            <Text style={styles.heroEyebrow}>{t('home.newCollection')}</Text>
+            <Text style={styles.heroTitle}>{t('home.heroTitle')}</Text>
+            <Text style={styles.heroSub}>{t('home.heroSubtitle')}</Text>
             <View style={styles.heroAction}>
-              <Text style={styles.heroActionText}>Khám phá ngay</Text>
+              <Text style={styles.heroActionText}>{t('home.exploreNow')}</Text>
               <Ionicons name="arrow-forward" size={16} color={colors.ink} />
             </View>
           </View>
         </Pressable>
 
         <SectionHeader
-          title="Danh mục"
-          action="Xem tất cả"
-          onPress={() => navigation.navigate('Landing', { title: 'Tất cả sản phẩm' })}
+          title={t('home.categories')}
+          action={t('common.viewAll')}
+          onPress={() => navigation.navigate('Landing', { title: t('home.allProducts') })}
         />
         <ScrollView
           horizontal
@@ -129,7 +142,7 @@ export function HomeScreen({ navigation }: Props) {
               <View style={[styles.categoryIcon, { backgroundColor: category.color }]}>
                 <MaterialCommunityIcons name={category.icon} size={26} color={colors.primaryDark} />
               </View>
-              <Text style={styles.categoryName}>{category.name}</Text>
+              <Text style={styles.categoryName}>{t(category.labelKey)}</Text>
             </Pressable>
           ))}
         </ScrollView>
@@ -137,20 +150,20 @@ export function HomeScreen({ navigation }: Props) {
         <View style={styles.promoRow}>
           <LinearGradient colors={['#6D3AE6', '#9B6DF2']} style={styles.promoCard}>
             <Text style={styles.promoTag}>FREESHIP</Text>
-            <Text style={styles.promoTitle}>Đơn từ 299K</Text>
-            <Text style={styles.promoText}>Tự động áp dụng</Text>
+            <Text style={styles.promoTitle}>{t('home.orderFrom')}</Text>
+            <Text style={styles.promoText}>{t('home.autoApplied')}</Text>
           </LinearGradient>
           <LinearGradient colors={['#FF7D77', '#F4AA7A']} style={styles.promoCard}>
             <Text style={styles.promoTag}>FLASH SALE</Text>
-            <Text style={styles.promoTitle}>12:00 mỗi ngày</Text>
-            <Text style={styles.promoText}>Săn deal giới hạn</Text>
+            <Text style={styles.promoTitle}>{t('home.everyDay')}</Text>
+            <Text style={styles.promoText}>{t('home.limitedDeal')}</Text>
           </LinearGradient>
         </View>
 
         <SectionHeader
-          title="Sản phẩm nổi bật"
-          action="Xem thêm"
-          onPress={() => navigation.navigate('Landing', { title: 'Sản phẩm nổi bật' })}
+          title={t('home.featured')}
+          action={t('home.seeMore')}
+          onPress={() => navigation.navigate('Landing', { title: t('home.featured') })}
         />
         <ScrollView
           horizontal
@@ -167,7 +180,7 @@ export function HomeScreen({ navigation }: Props) {
           ))}
         </ScrollView>
 
-        <SectionHeader title="Gợi ý cho bạn" />
+        <SectionHeader title={t('home.recommended')} />
         <View style={styles.grid}>
           {query.data.products
             .slice()

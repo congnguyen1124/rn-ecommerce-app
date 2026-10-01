@@ -6,7 +6,9 @@ A professional React Native/Expo recreation of the Ecommerce flow in `on-tv-andr
 
 [Watch the Android emulator walkthrough](artifacts/on-plus-shopping-demo.mp4)
 
-![ON+ Shopping walkthrough contact sheet](artifacts/demo-contact-sheet.png)
+| English storefront                                                                                    | Language settings                                                                                            |
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| <img src="artifacts/on-plus-shopping-en.png" width="320" alt="ON+ Shopping home screen in English" /> | <img src="artifacts/language-settings-en.png" width="320" alt="ON+ Shopping language settings in English" /> |
 
 ## Included flows
 
@@ -18,6 +20,7 @@ A professional React Native/Expo recreation of the Ecommerce flow in `on-tv-andr
 - COD/Pay1 payment selection, payment result and cart cleanup
 - Six order-status tabs, order actions and full order detail/cancellation information
 - Persisted cart, address book and order history
+- Instant Vietnamese, English and Simplified Chinese switching from Settings, including localized product, variant and order data
 
 ## Architecture
 
@@ -29,8 +32,9 @@ src/
 │   ├── cart/               # components/data/domain/hooks/screens/store
 │   ├── catalog/            # components/data/domain/hooks/screens
 │   ├── checkout/           # screens/store
-│   └── orders/             # components/data/domain/screens/store
-└── shared/                 # design system, primitives and utilities
+│   ├── orders/             # components/data/domain/screens/store
+│   └── settings/           # language screen and persisted locale store
+└── shared/                 # design system, i18n, primitives and utilities
 ```
 
 The project follows feature-first boundaries. TanStack Query owns server-like async catalog state; Zustand owns local transactional state. Cart invariants live in pure domain functions so UI, persistence and tests use the same source of truth.
@@ -54,6 +58,7 @@ The cart behavior is ported from `OrderCartViewModel.kt`, `CardItem.kt` and `Car
 - React Navigation native stack
 - Zustand with AsyncStorage persistence
 - TanStack Query with native online/focus integration
+- i18next, react-i18next and Expo Localization
 - Jest + jest-expo + React Native Testing Library
 - ESLint flat config and Prettier
 
@@ -75,4 +80,4 @@ npx expo export --platform android
 
 ## Tests
 
-The current suite contains 49 unit tests. Most are focused on the cart domain and Zustand integration, including overflow quantities, stock boundaries, invalid variants, group/item selection, totals, removal confirmation, profile cleanup, add-to-existing behavior and variant replacement.
+The current suite contains 54 unit tests. Most are focused on the cart domain and Zustand integration, including overflow quantities, stock boundaries, invalid variants, group/item selection, totals, removal confirmation, profile cleanup, add-to-existing behavior and variant replacement. The i18n tests also enforce translation-key parity across all three locales and verify localized dummy catalog data.

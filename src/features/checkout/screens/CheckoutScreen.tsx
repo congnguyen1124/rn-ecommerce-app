@@ -4,11 +4,14 @@ import { Image } from 'expo-image';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import type { RootStackParamList } from '../../../app/navigation/types';
 import { AppButton } from '../../../shared/components/AppButton';
 import { AppCheckbox } from '../../../shared/components/AppCheckbox';
 import { ScreenHeader } from '../../../shared/components/ScreenHeader';
+import { intlLocale } from '../../../shared/i18n/i18n';
+import { localizeCatalogText, localizeVariantLabel } from '../../../shared/i18n/localizeCatalog';
 import { colors, radius, spacing } from '../../../shared/theme/tokens';
 import { formatCurrency } from '../../../shared/utils/currency';
 import { addressText } from '../../address/domain/addressRules';
@@ -38,6 +41,7 @@ interface CheckoutLine {
 }
 
 export function CheckoutScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const groups = useCartStore(({ groups: value }) => value);
   const clearPurchased = useCartStore(({ clearPurchased }) => clearPurchased);
   const addresses = useAddressStore(({ addresses: value }) => value);
@@ -138,7 +142,7 @@ export function CheckoutScreen({ navigation, route }: Props) {
         id: sellerIds.length > 1 ? `${baseId}-${index + 1}` : baseId,
         sellerId,
         sellerName: sellerLines[0]?.sellerName ?? '',
-        createdAt: new Date().toLocaleString('vi-VN', {
+        createdAt: new Date().toLocaleString(intlLocale(), {
           hour: '2-digit',
           minute: '2-digit',
           day: '2-digit',
@@ -176,7 +180,7 @@ export function CheckoutScreen({ navigation, route }: Props) {
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
-      <ScreenHeader title="Thanh toán" />
+      <ScreenHeader title={t('checkout.title')} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Pressable
           onPress={() => navigation.navigate('AddressList', { selectionMode: true })}
@@ -184,7 +188,7 @@ export function CheckoutScreen({ navigation, route }: Props) {
         >
           <View style={styles.sectionHeading}>
             <Ionicons name="location-outline" size={21} color={colors.primary} />
-            <Text style={styles.sectionTitle}>Địa chỉ giao hàng</Text>
+            <Text style={styles.sectionTitle}>{t('checkout.shippingAddress')}</Text>
             <Ionicons name="chevron-forward" size={19} color={colors.textMuted} />
           </View>
           {address ? (
@@ -193,13 +197,15 @@ export function CheckoutScreen({ navigation, route }: Props) {
                 {address.name} · {address.phone}
               </Text>
               <Text style={styles.addressText}>{addressText(address)}</Text>
-              {address.isDefault ? <Text style={styles.defaultTag}>Mặc định</Text> : null}
+              {address.isDefault ? (
+                <Text style={styles.defaultTag}>{t('common.default')}</Text>
+              ) : null}
             </View>
           ) : (
-            <Text style={styles.addAddress}>+ Thêm địa chỉ giao hàng</Text>
+            <Text style={styles.addAddress}>{t('checkout.addAddress')}</Text>
           )}
           {missingAddress ? (
-            <Text style={styles.error}>Vui lòng chọn địa chỉ giao hàng</Text>
+            <Text style={styles.error}>{t('checkout.addressRequired')}</Text>
           ) : null}
         </Pressable>
 
@@ -217,9 +223,9 @@ export function CheckoutScreen({ navigation, route }: Props) {
                   />
                   <View style={styles.productInfo}>
                     <Text numberOfLines={2} style={styles.productName}>
-                      {line.name}
+                      {localizeCatalogText(line.name, t)}
                     </Text>
-                    <Text style={styles.variant}>{line.variantLabel}</Text>
+                    <Text style={styles.variant}>{localizeVariantLabel(line.variantLabel, t)}</Text>
                     <View style={styles.productPrice}>
                       <Text style={styles.price}>{formatCurrency(line.price)}</Text>
                       <Text style={styles.qty}>x{line.quantity}</Text>
@@ -234,14 +240,14 @@ export function CheckoutScreen({ navigation, route }: Props) {
                     <AppCheckbox
                       checked={personalAdvice[line.id] ?? line.personalAdvice}
                       onChange={(value) => setPersonalAdvice(line.id, value)}
-                      label="Nhận tư vấn cá nhân"
+                      label={t('catalog.personalAdvice')}
                     />
                   </View>
                 ))}
               <TextInput
                 value={notes[sellerId] ?? ''}
                 onChangeText={(text) => setNote(sellerId, text)}
-                placeholder="Lời nhắn cho người bán"
+                placeholder={t('checkout.sellerNote')}
                 placeholderTextColor={colors.textMuted}
                 style={styles.note}
               />
@@ -260,47 +266,55 @@ export function CheckoutScreen({ navigation, route }: Props) {
         >
           <View style={styles.sectionHeading}>
             <Ionicons name="card-outline" size={21} color={colors.primary} />
-            <Text style={styles.sectionTitle}>Phương thức thanh toán</Text>
+            <Text style={styles.sectionTitle}>{t('checkout.paymentMethod')}</Text>
             <Ionicons name="chevron-forward" size={19} color={colors.textMuted} />
           </View>
           <Text style={[styles.method, !paymentMethod && styles.placeholder]}>
             {paymentMethod === 'cod'
-              ? 'Thanh toán khi nhận hàng'
+              ? t('checkout.cod')
               : paymentMethod === 'pay1'
-                ? 'Thanh toán trực tuyến qua Pay1'
-                : 'Chọn phương thức thanh toán'}
+                ? t('checkout.pay1')
+                : t('checkout.choosePayment')}
           </Text>
           {missingPayment ? (
-            <Text style={styles.error}>Vui lòng chọn phương thức thanh toán</Text>
+            <Text style={styles.error}>{t('checkout.paymentRequired')}</Text>
           ) : null}
         </Pressable>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Chi tiết thanh toán</Text>
-          <PriceRow label="Tổng tiền hàng" value={formatCurrency(itemTotal)} />
-          <PriceRow label="Phí vận chuyển" value={formatCurrency(rawShipping)} />
+          <Text style={styles.sectionTitle}>{t('checkout.paymentDetails')}</Text>
+          <PriceRow label={t('checkout.merchandiseSubtotal')} value={formatCurrency(itemTotal)} />
+          <PriceRow label={t('checkout.shippingFee')} value={formatCurrency(rawShipping)} />
           <PriceRow
-            label="Giảm phí vận chuyển"
+            label={t('checkout.shippingDiscount')}
             value={`-${formatCurrency(shippingDiscount)}`}
             accent
           />
           <View style={styles.priceDivider} />
-          <PriceRow label="Tổng thanh toán" value={formatCurrency(total)} strong />
+          <PriceRow label={t('checkout.total')} value={formatCurrency(total)} strong />
         </View>
         <View style={styles.term}>
           <Ionicons name="shield-checkmark-outline" size={19} color={colors.primary} />
           <Text style={styles.termText}>
-            Bằng việc đặt hàng, bạn đồng ý với{' '}
-            <Text style={styles.termLink}>Điều khoản thương mại điện tử</Text> của ON+.
+            {t('checkout.termsPrefix')}{' '}
+            <Text style={styles.termLink}>{t('checkout.termsLink')}</Text>{' '}
+            {t('checkout.termsSuffix')}
           </Text>
         </View>
       </ScrollView>
       <View style={styles.bottomBar}>
         <View>
-          <Text style={styles.bottomLabel}>Tổng thanh toán ({quantity})</Text>
+          <Text style={styles.bottomLabel}>
+            {t('checkout.totalWithCount', { count: quantity })}
+          </Text>
           <Text style={styles.bottomTotal}>{formatCurrency(total)}</Text>
         </View>
-        <AppButton label="Đặt hàng" loading={loading} onPress={submit} style={styles.orderButton} />
+        <AppButton
+          label={t('checkout.placeOrder')}
+          loading={loading}
+          onPress={submit}
+          style={styles.orderButton}
+        />
       </View>
     </SafeAreaView>
   );

@@ -3,6 +3,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import type { RootStackParamList } from '../../../app/navigation/types';
 import { ScreenHeader } from '../../../shared/components/ScreenHeader';
@@ -14,6 +15,7 @@ import { useAddressStore } from '../store/addressStore';
 type Props = NativeStackScreenProps<RootStackParamList, 'AreaPicker'>;
 
 export function AreaPickerScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const setAreaDraft = useAddressStore(({ setAreaDraft: action }) => action);
   const [selected, setSelected] = useState<AreaSelection>({
     city: route.params?.city ?? '',
@@ -57,13 +59,13 @@ export function AreaPickerScreen({ navigation, route }: Props) {
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
-      <ScreenHeader title="Chọn khu vực" />
+      <ScreenHeader title={t('address.chooseArea')} />
       <View style={styles.search}>
         <Ionicons name="search" size={19} color={colors.textMuted} />
         <TextInput
           value={search}
           onChangeText={setSearch}
-          placeholder="Tìm kiếm"
+          placeholder={t('address.search')}
           placeholderTextColor={colors.textMuted}
           style={styles.searchInput}
         />
@@ -81,17 +83,21 @@ export function AreaPickerScreen({ navigation, route }: Props) {
         ) : null}
         <Crumb
           label={
-            step === 'city' ? 'Tỉnh/Thành phố' : step === 'district' ? 'Quận/Huyện' : 'Phường/Xã'
+            step === 'city'
+              ? t('address.city')
+              : step === 'district'
+                ? t('address.district')
+                : t('address.ward')
           }
           active
         />
       </View>
       <Text style={styles.heading}>
         {step === 'city'
-          ? 'Chọn Tỉnh/Thành phố'
+          ? t('address.chooseCity')
           : step === 'district'
-            ? 'Chọn Quận/Huyện'
-            : 'Chọn Phường/Xã'}
+            ? t('address.chooseDistrict')
+            : t('address.chooseWard')}
       </Text>
       <ScrollView>
         {options.map(({ name }) => (

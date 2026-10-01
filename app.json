@@ -19,7 +19,7 @@
       },
       "predictiveBackGestureEnabled": false
     },
-    "plugins": ["expo-font"],
+    "plugins": ["expo-font", "expo-localization"],
     "web": {
       "favicon": "./assets/favicon.png"
     }

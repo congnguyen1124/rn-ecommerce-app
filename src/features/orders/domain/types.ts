@@ -32,11 +32,11 @@ export interface OrderRecord {
   cancelReason?: string;
 }
 
-export const orderStatusLabel: Record<OrderStatusTab, string> = {
-  waiting_payment: 'Chờ thanh toán',
-  waiting_confirm: 'Chờ xác nhận',
-  waiting_shipping: 'Chờ lấy hàng',
-  delivering: 'Đang giao',
-  done: 'Đã giao',
-  cancelled: 'Đã hủy',
+export const orderStatusTranslationKey: Record<OrderStatusTab, string> = {
+  waiting_payment: 'orders.waitingPayment',
+  waiting_confirm: 'orders.waitingConfirm',
+  waiting_shipping: 'orders.waitingShipping',
+  delivering: 'orders.delivering',
+  done: 'orders.done',
+  cancelled: 'orders.cancelled',
 };

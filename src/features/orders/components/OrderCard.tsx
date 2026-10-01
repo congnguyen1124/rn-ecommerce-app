@@ -1,12 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { AppButton } from '../../../shared/components/AppButton';
+import { localizeCatalogText, localizeVariantLabel } from '../../../shared/i18n/localizeCatalog';
 import { colors, radius, spacing } from '../../../shared/theme/tokens';
 import { formatCurrency } from '../../../shared/utils/currency';
 import { cartImage } from '../../cart/utils/cartImage';
-import { orderStatusLabel, type OrderRecord } from '../domain/types';
+import { orderStatusTranslationKey, type OrderRecord } from '../domain/types';
 
 interface OrderCardProps {
   order: OrderRecord;
@@ -16,6 +18,7 @@ interface OrderCardProps {
 }
 
 export function OrderCard({ order, onDetail, onAction, actionLabel }: OrderCardProps) {
+  const { t } = useTranslation();
   const preview = order.lines[0];
   return (
     <View style={styles.card}>
@@ -24,33 +27,39 @@ export function OrderCard({ order, onDetail, onAction, actionLabel }: OrderCardP
           <Text style={styles.shopInitial}>{order.sellerName.slice(0, 1)}</Text>
         </View>
         <Text style={styles.shop}>{order.sellerName}</Text>
-        <Text style={styles.status}>{orderStatusLabel[order.status]}</Text>
+        <Text style={styles.status}>{t(orderStatusTranslationKey[order.status])}</Text>
       </View>
       {preview ? (
         <Pressable onPress={onDetail} style={styles.product}>
           <Image source={cartImage(preview.imageKey)} style={styles.image} contentFit="cover" />
           <View style={styles.productInfo}>
             <Text numberOfLines={2} style={styles.name}>
-              {preview.name}
+              {localizeCatalogText(preview.name, t)}
             </Text>
-            <Text style={styles.variant}>Phân loại: {preview.variantLabel}</Text>
+            <Text style={styles.variant}>
+              {t('orders.variant', { value: localizeVariantLabel(preview.variantLabel, t) })}
+            </Text>
             <Text style={styles.quantity}>x{preview.quantity}</Text>
           </View>
           <Text style={styles.price}>{formatCurrency(preview.price)}</Text>
         </Pressable>
       ) : null}
       {order.lines.length > 1 ? (
-        <Text style={styles.more}>và {order.lines.length - 1} sản phẩm khác</Text>
+        <Text style={styles.more}>
+          {t('orders.moreProducts', { count: order.lines.length - 1 })}
+        </Text>
       ) : null}
       <View style={styles.totalRow}>
         <Text style={styles.totalLabel}>
-          Thành tiền ({order.lines.reduce((sum, line) => sum + line.quantity, 0)} sản phẩm)
+          {t('orders.totalProducts', {
+            count: order.lines.reduce((sum, line) => sum + line.quantity, 0),
+          })}
         </Text>
         <Text style={styles.total}>{formatCurrency(order.total)}</Text>
       </View>
       <View style={styles.footer}>
         <Pressable onPress={onDetail} style={styles.detail}>
-          <Text style={styles.detailText}>Xem chi tiết</Text>
+          <Text style={styles.detailText}>{t('orders.viewDetail')}</Text>
           <Ionicons name="chevron-forward" size={15} color={colors.textSecondary} />
         </Pressable>
         {actionLabel && onAction ? (

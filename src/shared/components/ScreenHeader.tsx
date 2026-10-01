@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import { colors, spacing } from '../theme/tokens';
 
@@ -13,11 +14,12 @@ interface ScreenHeaderProps {
 
 export function ScreenHeader({ title, back = true, right, subtitle }: ScreenHeaderProps) {
   const navigation = useNavigation();
+  const { t } = useTranslation();
   return (
     <View style={styles.container}>
       {back ? (
         <Pressable
-          accessibilityLabel="Quay lại"
+          accessibilityLabel={t('common.back')}
           hitSlop={10}
           onPress={() => navigation.goBack()}
           style={styles.side}

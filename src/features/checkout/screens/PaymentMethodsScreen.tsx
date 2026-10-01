@@ -2,6 +2,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import type { PaymentMethod, RootStackParamList } from '../../../app/navigation/types';
 import { ScreenHeader } from '../../../shared/components/ScreenHeader';
@@ -12,25 +13,26 @@ type Props = NativeStackScreenProps<RootStackParamList, 'PaymentMethods'>;
 
 const methods: {
   id: PaymentMethod;
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
   icon: keyof typeof MaterialCommunityIcons.glyphMap;
 }[] = [
   {
     id: 'cod',
-    title: 'Thanh toán khi nhận hàng',
-    description: 'Thanh toán bằng tiền mặt cho đơn vị vận chuyển',
+    titleKey: 'payment.codTitle',
+    descriptionKey: 'payment.codDescription',
     icon: 'cash',
   },
   {
     id: 'pay1',
-    title: 'Thanh toán trực tuyến',
-    description: 'Thẻ nội địa, quốc tế hoặc ví điện tử qua Pay1',
+    titleKey: 'payment.onlineTitle',
+    descriptionKey: 'payment.onlineDescription',
     icon: 'credit-card-outline',
   },
 ];
 
 export function PaymentMethodsScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const selected = useCheckoutStore(({ paymentMethod }) => paymentMethod) ?? route.params.selected;
   const setPaymentMethod = useCheckoutStore(({ setPaymentMethod }) => setPaymentMethod);
   const choose = (method: PaymentMethod) => {
@@ -39,7 +41,7 @@ export function PaymentMethodsScreen({ navigation, route }: Props) {
   };
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
-      <ScreenHeader title="Phương thức thanh toán" />
+      <ScreenHeader title={t('payment.title')} />
       <View style={styles.list}>
         {methods.map((method) => {
           const disabled = route.params.preorder === true && method.id === 'cod';
@@ -59,9 +61,9 @@ export function PaymentMethodsScreen({ navigation, route }: Props) {
                 />
               </View>
               <View style={styles.content}>
-                <Text style={styles.title}>{method.title}</Text>
+                <Text style={styles.title}>{t(method.titleKey)}</Text>
                 <Text style={styles.description}>
-                  {disabled ? 'Không áp dụng cho sản phẩm đặt trước' : method.description}
+                  {disabled ? t('payment.preorderDisabled') : t(method.descriptionKey)}
                 </Text>
               </View>
               <Ionicons

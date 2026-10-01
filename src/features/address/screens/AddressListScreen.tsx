@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import type { RootStackParamList } from '../../../app/navigation/types';
 import { AppButton } from '../../../shared/components/AppButton';
@@ -14,6 +15,7 @@ import { useAddressStore } from '../store/addressStore';
 type Props = NativeStackScreenProps<RootStackParamList, 'AddressList'>;
 
 export function AddressListScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const addresses = useAddressStore(({ addresses: value }) => value);
   const selectedId = useAddressStore(({ selectedId: value }) => value);
   const select = useAddressStore(({ select: action }) => action);
@@ -30,7 +32,7 @@ export function AddressListScreen({ navigation, route }: Props) {
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
-      <ScreenHeader title={selectionMode ? 'Địa chỉ giao hàng' : 'Sổ địa chỉ'} />
+      <ScreenHeader title={selectionMode ? t('address.shippingTitle') : t('address.bookTitle')} />
       <ScrollView contentContainerStyle={styles.list}>
         {addresses.map((address) => (
           <Pressable key={address.id} onPress={() => pick(address.id)} style={styles.card}>
@@ -44,7 +46,9 @@ export function AddressListScreen({ navigation, route }: Props) {
                 <Text style={styles.phone}>{address.phone}</Text>
               </View>
               <Text style={styles.address}>{addressText(address)}</Text>
-              {address.isDefault ? <Text style={styles.defaultTag}>Mặc định</Text> : null}
+              {address.isDefault ? (
+                <Text style={styles.defaultTag}>{t('common.default')}</Text>
+              ) : null}
             </View>
             <Pressable
               onPress={() => navigation.navigate('AddressForm', { addressId: address.id })}
@@ -58,7 +62,7 @@ export function AddressListScreen({ navigation, route }: Props) {
           <AppButton
             variant="outline"
             icon={<Ionicons name="add-circle-outline" size={19} color={colors.primary} />}
-            label="Thêm địa chỉ mới"
+            label={t('address.addNew')}
             onPress={() => navigation.navigate('AddressForm')}
             style={styles.add}
           />

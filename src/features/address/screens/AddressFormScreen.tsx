@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import type { RootStackParamList } from '../../../app/navigation/types';
 import { AppButton } from '../../../shared/components/AppButton';
@@ -27,6 +28,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'AddressForm'>;
 const emptyArea: AreaSelection = { city: '', district: '', ward: '' };
 
 export function AddressFormScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const addresses = useAddressStore(({ addresses: value }) => value);
   const upsert = useAddressStore(({ upsert: action }) => action);
   const remove = useAddressStore(({ remove: action }) => action);
@@ -65,16 +67,13 @@ export function AddressFormScreen({ navigation, route }: Props) {
 
   const deleteAddress = () => {
     if (existing?.isDefault) {
-      Alert.alert(
-        'Không thể xóa',
-        'Bạn không thể xóa địa chỉ mặc định. Hãy chọn địa chỉ mặc định khác trước.',
-      );
+      Alert.alert(t('address.cannotDelete'), t('address.cannotDeleteDefault'));
       return;
     }
-    Alert.alert('Xóa địa chỉ', 'Bạn có chắc muốn xóa địa chỉ này?', [
-      { text: 'Hủy', style: 'cancel' },
+    Alert.alert(t('address.deleteTitle'), t('address.deleteMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Xóa',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: () => {
           if (existing) remove(existing.id);
@@ -87,48 +86,48 @@ export function AddressFormScreen({ navigation, route }: Props) {
   const areaLabel = [area.ward, area.district, area.city].filter(Boolean).join(', ');
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
-      <ScreenHeader title={existing ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ'} />
+      <ScreenHeader title={existing ? t('address.updateTitle') : t('address.addTitle')} />
       <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
         <Field
-          label="Họ và tên"
+          label={t('address.fullName')}
           value={name}
           onChange={setName}
-          placeholder="Nhập họ và tên"
-          error={errors.includes('name') ? 'Vui lòng nhập họ và tên' : undefined}
+          placeholder={t('address.fullNamePlaceholder')}
+          error={errors.includes('name') ? t('address.fullNameRequired') : undefined}
         />
         <Field
-          label="Số điện thoại"
+          label={t('address.phone')}
           value={phone}
           onChange={setPhone}
-          placeholder="Ví dụ: 090 123 4567"
+          placeholder={t('address.phonePlaceholder')}
           keyboardType="phone-pad"
-          error={errors.includes('phone') ? 'Số điện thoại không hợp lệ' : undefined}
+          error={errors.includes('phone') ? t('address.phoneInvalid') : undefined}
         />
-        <Text style={styles.label}>Tỉnh/Thành phố, Quận/Huyện, Phường/Xã</Text>
+        <Text style={styles.label}>{t('address.area')}</Text>
         <Pressable
           onPress={() => navigation.navigate('AreaPicker', area)}
           style={[styles.select, errors.includes('area') && styles.inputError]}
         >
           <Text style={[styles.selectText, !areaLabel && styles.placeholder]}>
-            {areaLabel || 'Chọn khu vực'}
+            {areaLabel || t('address.chooseArea')}
           </Text>
           <Ionicons name="chevron-forward" size={19} color={colors.textSecondary} />
         </Pressable>
         {errors.includes('area') ? (
-          <Text style={styles.error}>Vui lòng chọn đầy đủ khu vực</Text>
+          <Text style={styles.error}>{t('address.areaRequired')}</Text>
         ) : null}
         <Field
-          label="Địa chỉ cụ thể"
+          label={t('address.street')}
           value={street}
           onChange={setStreet}
-          placeholder="Số nhà, tên đường"
+          placeholder={t('address.streetPlaceholder')}
           multiline
-          error={errors.includes('street') ? 'Vui lòng nhập địa chỉ cụ thể' : undefined}
+          error={errors.includes('street') ? t('address.streetRequired') : undefined}
         />
         <View style={styles.defaultRow}>
           <View style={styles.defaultText}>
-            <Text style={styles.defaultTitle}>Đặt làm địa chỉ mặc định</Text>
-            <Text style={styles.defaultNote}>Ưu tiên sử dụng khi thanh toán</Text>
+            <Text style={styles.defaultTitle}>{t('address.makeDefault')}</Text>
+            <Text style={styles.defaultNote}>{t('address.defaultNote')}</Text>
           </View>
           <Switch
             value={isDefault}
@@ -137,11 +136,11 @@ export function AddressFormScreen({ navigation, route }: Props) {
             thumbColor={isDefault ? colors.primary : colors.white}
           />
         </View>
-        <AppButton label="Lưu địa chỉ" onPress={save} style={styles.save} />
+        <AppButton label={t('address.save')} onPress={save} style={styles.save} />
         {existing ? (
           <AppButton
             variant="danger"
-            label="Xóa địa chỉ"
+            label={t('address.deleteAddress')}
             onPress={deleteAddress}
             style={styles.delete}
           />

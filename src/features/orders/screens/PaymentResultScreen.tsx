@@ -3,6 +3,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import type { RootStackParamList } from '../../../app/navigation/types';
 import { AppButton } from '../../../shared/components/AppButton';
@@ -12,6 +13,7 @@ import { useOrderStore } from '../store/orderStore';
 type Props = NativeStackScreenProps<RootStackParamList, 'PaymentResult'>;
 
 export function PaymentResultScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const markPaid = useOrderStore(({ markPaid }) => markPaid);
   useEffect(() => {
     if (route.params.success) markPaid(route.params.orderId);
@@ -32,17 +34,15 @@ export function PaymentResultScreen({ navigation, route }: Props) {
         />
       </View>
       <Text style={styles.title}>
-        {route.params.success ? 'Đặt hàng thành công' : 'Thanh toán chưa thành công'}
+        {route.params.success ? t('orders.successTitle') : t('orders.failTitle')}
       </Text>
       <Text style={styles.message}>
-        {route.params.success
-          ? 'Đơn hàng của bạn đã được ghi nhận. Người bán sẽ sớm xác nhận và chuẩn bị hàng.'
-          : 'Đơn hàng đã được tạo nhưng thanh toán gặp sự cố. Bạn có thể thanh toán lại trong danh sách đơn hàng.'}
+        {route.params.success ? t('orders.successMessage') : t('orders.failMessage')}
       </Text>
-      <Text style={styles.code}>Mã đơn: {route.params.orderId}</Text>
+      <Text style={styles.code}>{t('orders.code', { code: route.params.orderId })}</Text>
       <View style={styles.actions}>
-        <AppButton label="Xem đơn hàng" onPress={goOrders} />
-        <AppButton variant="outline" label="Về trang chủ" onPress={goHome} />
+        <AppButton label={t('orders.viewOrders')} onPress={goOrders} />
+        <AppButton variant="outline" label={t('orders.home')} onPress={goHome} />
       </View>
     </SafeAreaView>
   );

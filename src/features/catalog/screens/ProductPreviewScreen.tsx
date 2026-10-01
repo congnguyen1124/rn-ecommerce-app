@@ -3,14 +3,17 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import type { RootStackParamList } from '../../../app/navigation/types';
+import { localizeCatalogText } from '../../../shared/i18n/localizeCatalog';
 import { colors, spacing } from '../../../shared/theme/tokens';
 import { useProduct } from '../hooks/useCatalog';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ProductPreview'>;
 
 export function ProductPreviewScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const query = useProduct(route.params.productId);
   if (!query.data) return null;
   return (
@@ -20,7 +23,7 @@ export function ProductPreviewScreen({ navigation, route }: Props) {
           <Ionicons name="close" size={28} color={colors.white} />
         </Pressable>
         <Text numberOfLines={1} style={styles.title}>
-          {query.data.name}
+          {localizeCatalogText(query.data.name, t)}
         </Text>
         <View style={styles.placeholder} />
       </View>

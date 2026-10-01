@@ -3,33 +3,36 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 import type { RootStackParamList } from '../../../app/navigation/types';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { ScreenHeader } from '../../../shared/components/ScreenHeader';
+import { localizeCatalogText, localizeVariantLabel } from '../../../shared/i18n/localizeCatalog';
 import { colors, radius, spacing } from '../../../shared/theme/tokens';
 import { formatCurrency } from '../../../shared/utils/currency';
 import { addressText } from '../../address/domain/addressRules';
 import { cartImage } from '../../cart/utils/cartImage';
-import { orderStatusLabel } from '../domain/types';
+import { orderStatusTranslationKey } from '../domain/types';
 import { useOrderStore } from '../store/orderStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OrderDetail'>;
 
 export function OrderDetailScreen({ navigation, route }: Props) {
+  const { t } = useTranslation();
   const order = useOrderStore(({ orders }) => orders.find(({ id }) => id === route.params.orderId));
   if (!order)
     return (
       <EmptyState
-        title="Không tìm thấy đơn hàng"
-        message="Đơn hàng không còn tồn tại."
-        actionLabel="Quay lại"
+        title={t('orders.notFound')}
+        message={t('orders.noLongerExists')}
+        actionLabel={t('common.back')}
         onAction={navigation.goBack}
       />
     );
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
-      <ScreenHeader title="Chi tiết đơn hàng" subtitle={`#${order.id}`} />
+      <ScreenHeader title={t('orders.detailTitle')} subtitle={`#${order.id}`} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.statusHero}>
           <View style={styles.statusIcon}>
@@ -46,20 +49,20 @@ export function OrderDetailScreen({ navigation, route }: Props) {
             />
           </View>
           <View>
-            <Text style={styles.status}>{orderStatusLabel[order.status]}</Text>
+            <Text style={styles.status}>{t(orderStatusTranslationKey[order.status])}</Text>
             <Text style={styles.date}>{order.createdAt}</Text>
           </View>
         </View>
         {order.cancelReason ? (
           <View style={styles.cancel}>
-            <Text style={styles.cancelTitle}>Lý do hủy đơn</Text>
-            <Text style={styles.cancelText}>{order.cancelReason}</Text>
+            <Text style={styles.cancelTitle}>{t('orders.cancelReason')}</Text>
+            <Text style={styles.cancelText}>{localizeCatalogText(order.cancelReason, t)}</Text>
           </View>
         ) : null}
         <View style={styles.section}>
           <View style={styles.heading}>
             <Ionicons name="location-outline" size={20} color={colors.primary} />
-            <Text style={styles.headingText}>Địa chỉ nhận hàng</Text>
+            <Text style={styles.headingText}>{t('orders.deliveryAddress')}</Text>
           </View>
           <Text style={styles.recipient}>
             {order.address.name} · {order.address.phone}
@@ -72,8 +75,8 @@ export function OrderDetailScreen({ navigation, route }: Props) {
             <View key={line.id} style={styles.product}>
               <Image source={cartImage(line.imageKey)} style={styles.image} contentFit="cover" />
               <View style={styles.productInfo}>
-                <Text style={styles.name}>{line.name}</Text>
-                <Text style={styles.variant}>{line.variantLabel}</Text>
+                <Text style={styles.name}>{localizeCatalogText(line.name, t)}</Text>
+                <Text style={styles.variant}>{localizeVariantLabel(line.variantLabel, t)}</Text>
                 <Text style={styles.qty}>x{line.quantity}</Text>
               </View>
               <Text style={styles.price}>{formatCurrency(line.price)}</Text>
@@ -81,29 +84,33 @@ export function OrderDetailScreen({ navigation, route }: Props) {
           ))}
           {order.note ? (
             <View style={styles.note}>
-              <Text style={styles.noteLabel}>Lời nhắn:</Text>
-              <Text style={styles.noteText}>{order.note}</Text>
+              <Text style={styles.noteLabel}>{t('orders.note')}</Text>
+              <Text style={styles.noteText}>{localizeCatalogText(order.note, t)}</Text>
             </View>
           ) : null}
         </View>
         <View style={styles.section}>
-          <Text style={styles.headingText}>Thông tin thanh toán</Text>
-          <DetailRow label="Mã đơn hàng" value={order.id} />
+          <Text style={styles.headingText}>{t('orders.paymentInfo')}</Text>
+          <DetailRow label={t('orders.orderCode')} value={order.id} />
           <DetailRow
-            label="Phương thức"
-            value={
-              order.paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng' : 'Thanh toán trực tuyến'
-            }
+            label={t('orders.method')}
+            value={order.paymentMethod === 'cod' ? t('payment.codTitle') : t('payment.onlineTitle')}
           />
-          <DetailRow label="Tổng tiền hàng" value={formatCurrency(order.itemTotal)} />
-          <DetailRow label="Phí vận chuyển" value={formatCurrency(order.rawShippingFee)} />
           <DetailRow
-            label="Giảm phí vận chuyển"
+            label={t('checkout.merchandiseSubtotal')}
+            value={formatCurrency(order.itemTotal)}
+          />
+          <DetailRow
+            label={t('checkout.shippingFee')}
+            value={formatCurrency(order.rawShippingFee)}
+          />
+          <DetailRow
+            label={t('checkout.shippingDiscount')}
             value={`-${formatCurrency(order.rawShippingFee - order.shippingFee)}`}
             accent
           />
           <View style={styles.divider} />
-          <DetailRow label="Tổng thanh toán" value={formatCurrency(order.total)} strong />
+          <DetailRow label={t('checkout.total')} value={formatCurrency(order.total)} strong />
         </View>
       </ScrollView>
     </SafeAreaView>
